@@ -1,3 +1,5 @@
-version #v4.0#
-messageNewV #ChangeLogs\n- Fixed Getlanguage detection\n- Fixed Request CC flag\n- Fixed xxxxx\n#
-messageOldV #Please download latest version at this address\n https://github.com/ClashGameBot/CGB/archive/v4.0.zip\n#
+[general]
+version     = "v4.0.0"
+messagenew = "message if you have correct version\nrow1\nrow2"
+messageold = "message if you have old version"
+
