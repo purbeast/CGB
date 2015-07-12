@@ -3,3 +3,7 @@ version     = "v4.0.0"
 messagenew = "message if you have correct version\nrow1\nrow2"
 messageold = "message if you have old version"
 
+
+[old]
+oldchkvers = "version #v4.0#"
+
