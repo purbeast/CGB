@@ -142,8 +142,13 @@ Func algorithm_AllTroops() ;Attack Algorithm for all existing troops
 			, ["HEROES", 1, 2, 1, 1] _
 			]
 
-
-	LaunchTroop2($listInfoDeploy, $CC, $King, $Queen)
+    ;******* Begin ********
+    If ($nbSides = 1) Then
+	   algorithm_CustomTroops()
+    Else
+	   LaunchTroop2($listInfoDeploy, $CC, $King, $Queen)
+    EndIf
+	;******** END *********
 
 	If _Sleep(100) Then Return
 	SetLog("Dropping left over troops", $COLOR_BLUE)
@@ -151,8 +156,8 @@ Func algorithm_AllTroops() ;Attack Algorithm for all existing troops
 		PrepareAttack($iMatchMode, True) ;Check remaining quantities
 		For $i = $eBarb To $eLava ; lauch all remaining troops
 			;If $i = $eBarb Or $i = $eArch Then
-			LauchTroop($i, $nbSides, 0, 1)
-			CheckHeroesHealth()
+			;LauchTroop($i, $nbSides, 0, 1)
+			;CheckHeroesHealth()
 			;Else
 			;	 LauchTroop($i, $nbSides, 0, 1, 2)
 			;EndIf
@@ -179,3 +184,169 @@ Func algorithm_AllTroops() ;Attack Algorithm for all existing troops
 	SetLog("Finished Attacking, waiting for the battle to end")
 EndFunc   ;==>algorithm_AllTroops
 
+;******* Begin ********
+; troop_type:side:delay:trop_number:drop_point
+; troop_type: type troop to deploy
+; side: which side to drop the troops
+; delay: delay after troop deploy completed
+; drop_point: number of drop point (0 for line drop)
+
+#include <Array.au3>
+#include <File.au3>
+
+Local $aInput
+$file = @ScriptDir & "\attack_algo.txt"
+
+Func _IntFromString($s_str)
+	if Not(StringRegExp($s_str, '[[:alpha:]]', $STR_REGEXPMATCH)) Then
+		Return Int(StringRegExpReplace($s_str, "[^\d\.]", ""))
+	Else
+		Return "string"
+	endif
+EndFunc
+
+func ReadFileToArray($file, ByRef $attack_array)
+	local $invalid_cmd
+	local $array
+	local $aData
+	local $troop_type
+	SetLog("Read user defined attack algorithm file - " & $file, $COLOR_ORANGE)
+	_FileReadToArray($file, $array)
+	For $i = 1 to UBound($array) -1
+		$aData = StringSplit($array[$i], ":")
+		if Not ($aData[0] = 5) Then
+			SetLog ("line no:" & $i & " invalid trop config")
+			ContinueLoop
+		Endif
+		$invalid_cmd = 0
+
+		Switch $aData[1]
+			Case "giant"
+				$troop_type = $eGiant
+			Case "barb"
+				$troop_type = $eBarb
+			Case "arch"
+				$troop_type = $eArch
+			Case "golin"
+				$troop_type = $eGobl
+			case "wb"
+				$troop_type = $eWall
+			Case "king"
+				$troop_type = $eKing
+			Case "queen"
+				$troop_type = $eQueen
+			Case "cc"
+				$troop_type = $eCastle
+			Case Else
+				SetLog ("line no " & $i & ": invalid trop type")
+				$invalid_cmd = 1
+				ContinueLoop
+		EndSwitch
+		;TODO: check valid side
+
+		For $j = 2 to UBound($aData) -1
+			if Not(IsNumber(_IntFromString($aData[$j]))) Then
+				$invalid_cmd = 1
+			Endif
+		Next
+
+		if $invalid_cmd == 1 Then
+			SetLog ("line no" & $i & ": invalid trop operations")
+			continueloop
+		endif
+		_ArrayAdd($attack_array, $array[$i])
+	Next
+	SetLog("Finish reading user defined attack algorithm file", $COLOR_ORANGE)
+ endfunc
+
+func attack_array(BYref $array)
+	local $aData
+	local $troop_name
+	local $troop
+	local $troop_type
+	local $edge
+	local $delay
+	local $troop_no
+	local $SlotPerEdge
+
+	For $i = 0 to UBound($array) -1
+		;SetLog ("array[" & $i & "]:" & $array[$i], $COLOR_ORANGE)
+		$aData = StringSplit($array[$i], ":")
+		;for $j = 0 to UBound($aData) -1
+		;	SetLog ("aData[" & $j & "]:" & $aData[$j], $COLOR_ORANGE)
+		;Next
+		; TODO: clean up on troop type checking
+		Switch $aData[1]
+			Case "giant"
+				$troop_type = $eGiant
+			Case "barb"
+				$troop_type = $eBarb
+			Case "arch"
+				$troop_type = $eArch
+			Case "golin"
+				$troop_type = $eGobl
+			case "wb"
+				$troop_type = $eWall
+			Case "king"
+				$troop_type = $eKing
+			Case "queen"
+				$troop_type = $eQueen
+			Case "cc"
+				$troop_type = $eCastle
+			Case Else
+				SetLog ("Unsupported troop type: " & $aData[1]])
+				ContinueLoop
+		EndSwitch
+		$troop = -1
+		$troop_name = "unknown"
+		$edge = $aData[2]
+		$delay = $aData[3]
+		$troop_no = $aData[4]
+		$SlotPerEdge = $aData[5]
+
+		For $k = 0 To 8 ; identify the position of this kind of troop
+			If $atkTroops[$k][0] = $troop_type Then
+				$troop = $k
+				if $troop_no > 1 Then
+					$troop_name = NameOfTroop($troop_type, 1)
+				EndIf
+			endif
+		Next
+
+		SetLog ("deploy: "& $troop_no & " " & $troop_name & " - on edge" & $Edges[$edge] & " with " & $SlotPerEdge & "drop points",  $COLOR_BLUE)
+		DropOnEdge($troop, $Edges[$edge], $troop_no, $SlotPerEdge)
+		If _Sleep($delay) Then Return
+	Next
+endfunc
+
+Func algorithm_CustomTroops() ;Attack Algorithm for all existing troops
+
+		$King = -1
+		$Queen = -1
+		$CC = -1
+		$Barb = -1
+		$Arch = -1
+	    For $i = 0 To 8
+			If $atkTroops[$i][0] = $eBarb Then
+				$Barb = $i
+			ElseIf $atkTroops[$i][0] = $eArch Then
+				$Arch = $i
+			ElseIf $atkTroops[$i][0] = $eCastle Then
+				$CC = $i
+			ElseIf $atkTroops[$i][0] = $eKing Then
+				$King = $i
+			ElseIf $atkTroops[$i][0] = $eQueen Then
+				$Queen = $i
+			EndIf
+		 Next
+
+		SetLog("using custom algorithm", $COLOR_ORANGE)
+		local $valid_attacks[0] = []
+		ReadFileToArray($file, $valid_attacks)
+		attack_array($valid_attacks)
+
+		; ================================================================================?
+
+		SetLog("~Finished Attacking, waiting to finish", $COLOR_GREEN)
+ EndFunc
+;******** END *********

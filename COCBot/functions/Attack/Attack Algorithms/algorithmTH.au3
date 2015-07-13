@@ -366,12 +366,13 @@ EndFunc ;---AttackTHGrid
 Func AttackTHNormal()
 		 Setlog("Normal Attacking TH Outside with BAM PULSE!")
 
-		 ;---1st wave
-		 AttackTHGrid($eBarb,3,2,2000,1,5,0) ; deploys 6 barbarians
-		 AttackTHGrid($eArch,3,2,1600,1,4,0) ; deploys 6 archers
-		 AttackTHGrid($eMini,3,2,1400,1,4,0) ; deploys 6 minions
+		 ; 1st wave 30 secs, total 4 barbs 8 archers, works for totally unprotected TH
+		 SetLog("Attacking TH with 1st wave of BARCH", $COLOR_BLUE)
+		 AttackTHGrid($eBarb,3,Round(5 * Random(.8,1.4)),2000,1,4,0) ; deploys 4 barbarians to take out traps waits 2 seconds for bombs to go off
+		 AttackTHGrid($eArch,2,Round(4 * Random(.8,1.4)),2000,1,4,0) ; deploys 8 archers and wait additional 28sec
+
 		$count = 0
-		While $count < 30
+		While $count < 28
 		 _Sleep(1000)
 		 _CaptureRegion()
 		 If _ColorCheck(_GetPixelColor($aWonOneStar[0],$aWonOneStar[1], True), Hex($aWonOneStar[2], 6), $aWonOneStar[3]) = True Then
@@ -381,12 +382,15 @@ Func AttackTHNormal()
 		 $count+=1
 		WEnd
 
-		 ;---2nd wave
-		 AttackTHGrid($eBarb,3,2,2000,2,5,0) ; deploys 6 barbarians
-		 AttackTHGrid($eArch,3,2,1600,2,4,0) ; deploys 6 archers
-		 AttackTHGrid($eMini,3,2,1400,2,4,0) ; deploys 6 minions
+		 ; 2nd wave 25 secs total 16 barbs, 22 archers, works for TH partially covered by defenses
+ 		 SetLog("Attacking TH with 2nd wave of BARCH", $COLOR_BLUE)
+		 AttackTHGrid($eBarb,3,Round(6 * Random(.8,1.4)),200,2,4,0) ; deploys 8 barbarians
+		 AttackTHGrid($eArch,2,Round(5 * Random(.8,1.4)),5000,2,4,0) ; deploys 10 archers and waits 2 seconds
+		 AttackTHGrid($eBarb,3,Round(6 * Random(.8,1.4)),200,2,4,0) ; deploys 8 barbarians
+		 AttackTHGrid($eArch,Round(4 * Random(.8,1.4)),3,2000,2,4,0) ; deploys 12 archers and wait additional 22sec
+
 		$count = 0
-		While $count < 20
+		While $count < 15
 		 _Sleep(1000)
 		 _CaptureRegion()
 		 If _ColorCheck(_GetPixelColor($aWonOneStar[0],$aWonOneStar[1], True), Hex($aWonOneStar[2], 6), $aWonOneStar[3]) = True Then
@@ -396,12 +400,18 @@ Func AttackTHNormal()
 		 $count+=1
 		WEnd
 
-		 ;---3rd wave 10 secs
-		 AttackTHGrid($eBarb,3,2,1600,3,5,0) ; deploys 6 barbarians
-		 AttackTHGrid($eMini,3,2,1500,3,4,0) ; deploys 6 minions
-		 AttackTHGrid($eArch,3,2,1400,3,4,0) ; deploys 6 archers
+		 ;---3nd wave 17 secs (rather short interval until ALL IN) total 2 giants, 30 barbs, 57 archers
+		 SetLog("Oh Shit! Seems like a trapped TH!", $COLOR_BLUE)
+		 AttackTHGrid($eBarb,Round(6 * Random(.8,1.4)),3,200,3,4,0) ; deploys 9 barbarians
+		 AttackTHGrid($eGiant,2,1,200,3,4,0) ; deploys 2 giants as meat shield
+		 AttackTHGrid($eArch,3,Round(5 * Random(.8,1.4)),200,3,4,0) ; deploys 15 archers
+		 AttackTHGrid($eBarb,Round(4 * Random(.8,1.4)),3,200,3,4,0) ; deploys 9 barbarians
+		 AttackTHGrid($eArch,3,Round(3 * Random(.8,1.4)),200,3,4,0) ; deploys 18 archers
+		 AttackTHGrid($eBarb,Round(5 * Random(.8,1.4)),4,200,3,4,0) ; deploys 12 barbarians
+		 AttackTHGrid($eArch,4,Round(4 * Random(.8,1.4)),1000,3,4,0) ; deploys 24 archers and wait additional 16sec
+
 		$count = 0
-		While $count < 20
+		While $count < 15
 		 _Sleep(1000)
 		 _CaptureRegion()
 		 If _ColorCheck(_GetPixelColor($aWonOneStar[0],$aWonOneStar[1], True), Hex($aWonOneStar[2], 6), $aWonOneStar[3]) = True Then
@@ -411,32 +421,20 @@ Func AttackTHNormal()
 		 $count+=1
 		WEnd
 
-		 Setlog("Normal Attacking TH Outside in FULL!")
-		 AttackTHGrid($eGiant,3,1,1000,1,2,0) ;releases 3 giants
-		 AttackTHGrid($eWall,2,2,1000,1,1,0) ; deploys 4 wallbreakers
-		 AttackTHGrid($eArch,5,5,7000,4,4,0) ;releases 25 archers
-		 AttackTHGrid($eBarb,5,5,7000,4,5,0) ;releases 25 barbs
-		 AttackTHGrid($eMini,5,2,5000,4,4,1) ;releases 10 minions and Heroes
-		$count = 0
-		While $count < 20
-		 _Sleep(1000)
-		 _CaptureRegion()
-		 If _ColorCheck(_GetPixelColor($aWonOneStar[0],$aWonOneStar[1], True), Hex($aWonOneStar[2], 6), $aWonOneStar[3]) = True Then
-			SetLog("Townhall has been destroyed!")
-			Return ;exit if you get a star
-		 EndIf
-		 $count+=1
-		WEnd
+		 ;---4th wave 20 secs throw in everything
+		 Setlog("Dammit! ALL IN!", $COLOR_BLUE)
+		 AttackTHGrid($eArch,2,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 20 archers
+		 AttackTHGrid($eBarb,2,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 20 barbarians
+		 AttackTHGrid($eArch,2,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 20 archers and Heroes
+		 AttackTHGrid($eBarb,2,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 20 barbarians
+		 AttackTHGrid($eArch,2,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 20 archers
+		 AttackTHGrid($eBarb,2,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 20 barbarians
+		 AttackTHGrid($eArch,4,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 40 archers
+		 AttackTHGrid($eBarb,4,Round(10 * Random(.8,1.4)),100,4,4,0) ; deploys 40 barbarians
+		 AttackTHGrid($eArch,4,Round(10 * Random(.8,1.4)),1000,4,4,0) ; deploys 40 archers and Heroes (again just in case) and waits for a minute
 
-		;Final Wave
- 		 AttackTHGrid($eGiant,5,1,500,2,2,0) ;releases 5 giants
- 		 AttackTHGrid($eHogs,5,1,100,2,4,0) ;releases 5 Hogs
-		 AttackTHGrid($eArch,5,5,7000,4,4,0) ;releases 25 archers
-		 AttackTHGrid($eBarb,5,5,7000,4,5,0) ;releases 25 barbs
-		 AttackTHGrid($eMini,5,2,5000,4,4,0) ;releases 10 minions
-		 AttackTHGrid($eWiza,3,2,10000,1,1,1) ;releases 6 wizards and releases hero
 		$count = 0
-		While $count < 20
+		While $count < 40
 		 _Sleep(1000)
 		 _CaptureRegion()
 		 If _ColorCheck(_GetPixelColor($aWonOneStar[0],$aWonOneStar[1], True), Hex($aWonOneStar[2], 6), $aWonOneStar[3]) = True Then
